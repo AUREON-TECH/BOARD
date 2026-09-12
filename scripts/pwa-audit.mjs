@@ -33,6 +33,6 @@ const sw = fs.readFileSync('sw.js', 'utf8');
 for (const token of ['CACHE_VERSION', 'Authorization', 'Cookie', 'Range', 'If-Range', 'no-store', 'private', 'Set-Cookie', 'Content-Range', 'Vary', 'offline.html']) {
   if (!sw.includes(token)) throw new Error(`sw.js missing protection/token ${token}`);
 }
-if (!sw.includes("request.mode === 'navigate'")) throw new Error('Navigation fallback policy missing');
+if (!/request\.mode\s*===\s*['"]navigate['"]/.test(sw)) throw new Error('Navigation fallback policy missing');
 if (!sw.includes('caches.delete')) throw new Error('Old cache cleanup missing');
 console.log('BOARD PWA audit passed');
