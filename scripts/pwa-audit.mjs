@@ -35,4 +35,17 @@ for (const token of ['CACHE_VERSION', 'Authorization', 'Cookie', 'Range', 'If-Ra
 }
 if (!/request\.mode\s*===\s*['"]navigate['"]/.test(sw)) throw new Error('Navigation fallback policy missing');
 if (!sw.includes('caches.delete')) throw new Error('Old cache cleanup missing');
+
+const cacheVersionMatch = sw.match(/CACHE_VERSION\s*=\s*['"]([^'"]+)['"]/);
+if (!cacheVersionMatch) throw new Error('Unable to resolve service worker cache version');
+const registrationVersionMatch = html.match(/serviceWorker\.register\(['"]\.\/sw\.js\?v=([^'"]+)['"]/);
+if (!registrationVersionMatch) throw new Error('Service worker registration must include an explicit version');
+if (registrationVersionMatch[1] !== cacheVersionMatch[1]) {
+  throw new Error(`Service worker registration version ${registrationVersionMatch[1]} does not match cache version ${cacheVersionMatch[1]}`);
+}
+if (!html.includes("location.protocol === 'https:'") || !html.includes("location.hostname === 'localhost'")) {
+  throw new Error('Service worker registration must be restricted to HTTPS or localhost');
+}
+if (!html.includes("updateViaCache: 'none'")) throw new Error('Service worker must use updateViaCache none');
+
 console.log('BOARD PWA audit passed');
