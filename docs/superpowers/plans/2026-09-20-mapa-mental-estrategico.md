@@ -212,7 +212,7 @@ test('new action after undo clears redo',()=>{
 });
 
 test('limits retained snapshots',()=>{
-  const history=createHistory({value:0},3);
+  const history=createHistory({value:0},2);
   history.push({value:1});history.push({value:2});history.push({value:3});
   history.undo();history.undo();history.undo();
   assert.equal(history.current().value,1);
