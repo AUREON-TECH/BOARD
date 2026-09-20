@@ -1,0 +1,9 @@
+{
+  "name": "aureon-board",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check app.js && node --check src/model.js && node --check src/history.js && node --check src/geometry.js && node --check src/drawing.js && node --check src/templates.js && node --check src/render.js && node --check src/storage.js && node --check src/interactions.js && node --check src/gesture.js && node --check sw.js && node scripts/pwa-audit.mjs"
+  }
+}
