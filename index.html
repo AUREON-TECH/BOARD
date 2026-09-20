@@ -1,64 +1,23 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0b1020">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="BOARD">
-  <meta name="description" content="BOARD — quadro estratégico visual para desenhar, organizar projetos e apresentar ideias.">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icons/icon-192.png">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="styles.css">
-  <title>BOARD — Strategic Canvas</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#08101f"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="description" content="BOARD — mapa mental e quadro estratégico visual.">
+  <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><link rel="stylesheet" href="styles.css"><title>BOARD — Strategic Canvas</title>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand"><span class="brand-dot"></span><strong>BOARD</strong><small>Strategic Canvas</small></div>
-    <input id="projectName" class="project-name" value="Novo projeto" aria-label="Nome do projeto">
-    <div class="top-actions">
-      <button id="installBtn" class="ghost" hidden>Instalar</button>
-      <button id="presentBtn" class="primary">Apresentar</button>
-    </div>
-  </header>
-
+  <header class="topbar"><div class="brand"><span class="brand-dot"></span><strong>BOARD</strong><small>Strategic Canvas</small></div><input id="projectName" class="project-name" value="Novo projeto" aria-label="Nome do projeto"><div class="top-actions"><button id="undoBtn" class="icon-action" title="Desfazer">↶</button><button id="redoBtn" class="icon-action" title="Refazer">↷</button><button id="installBtn" hidden>Instalar</button><button id="presentBtn" class="primary">Apresentar</button></div></header>
   <main class="workspace">
     <aside class="toolbar" aria-label="Ferramentas">
-      <button data-tool="select" class="active" title="Selecionar">↖</button>
-      <button data-tool="text" title="Texto">T</button>
-      <button data-tool="note" title="Nota">▣</button>
-      <button data-tool="rect" title="Bloco">▭</button>
-      <button data-tool="arrow" title="Seta">→</button>
-      <button id="deleteBtn" title="Excluir">⌫</button>
+      <button data-tool="select" class="active" title="Selecionar"><span>↖</span><small>Selecionar</small></button><button data-tool="hand" title="Mover quadro"><span>✋</span><small>Mover</small></button><button data-tool="central" title="Ideia central"><span>◎</span><small>Central</small></button><button data-tool="topic" title="Novo ponto"><span>＋</span><small>Ponto</small></button><button data-tool="note" title="Nota"><span>▣</span><small>Nota</small></button><button data-tool="connect" title="Conectar"><span>↗</span><small>Conectar</small></button><button data-tool="pen" title="Desenhar"><span>✎</span><small>Desenhar</small></button><button data-tool="eraser" title="Borracha"><span>⌁</span><small>Apagar</small></button><button id="deleteBtn" title="Excluir"><span>⌫</span><small>Excluir</small></button>
     </aside>
-
-    <section class="stage-wrap">
-      <div id="stage" class="stage" tabindex="0" aria-label="Quadro estratégico"></div>
-      <div id="emptyHint" class="empty-hint">
-        <strong>Transforme estratégia em visão.</strong>
-        <span>Adicione textos, notas e blocos. Arraste livremente pelo quadro.</span>
-      </div>
+    <section class="stage-wrap" id="stageWrap">
+      <div id="stage" class="stage" tabindex="0" aria-label="Quadro estratégico"><div id="viewport" class="viewport"><svg id="edgeLayer" class="scene-layer" width="4000" height="3000" aria-hidden="true"><defs><marker id="arrowHead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#8093bd"/></marker></defs></svg><svg id="drawLayer" class="scene-layer" width="4000" height="3000" aria-label="Desenhos"></svg><div id="nodeLayer" class="scene-layer node-layer" aria-label="Pontos do mapa"></div></div></div>
+      <div id="emptyHint" class="empty-hint"><strong>Comece pela sua ideia principal.</strong><span>Crie pontos, conecte estratégias e desenhe livremente.</span><button id="startMapBtn" class="primary">Criar mapa mental</button></div>
+      <div id="propertyBar" class="property-bar" hidden><label>Forma<select id="shapeSelect"><option value="rounded">Arredondado</option><option value="rect">Retângulo</option><option value="circle">Círculo</option></select></label><label>Fundo<input id="fillColor" type="color" value="#15213d"></label><label>Borda<input id="strokeColor" type="color" value="#89a0ff"></label><label>Texto<input id="textColor" type="color" value="#ffffff"></label><button id="branchBtn">＋ Ramificação</button></div>
+      <div class="zoom-controls"><button id="zoomOut">−</button><button id="zoomFit">Ajustar</button><button id="zoomIn">＋</button></div>
     </section>
-
-    <aside class="slides-panel">
-      <div class="slides-head"><strong>Páginas</strong><button id="addSlideBtn" title="Nova página">＋</button></div>
-      <div id="slidesList"></div>
-    </aside>
+    <aside class="slides-panel" id="slidesPanel"><div class="slides-head"><strong>Páginas</strong><button id="addPageBtn" title="Nova página">＋</button></div><div id="pagesList"></div></aside>
   </main>
-
-  <footer class="statusbar">
-    <span id="saveStatus">Salvo localmente</span>
-    <span id="offlineStatus">Online</span>
-    <span id="zoomLabel">100%</span>
-  </footer>
-
-  <script src="app.js" defer></script>
-  <script>
-    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v1', { updateViaCache: 'none' }).then(r => r.update()).catch(console.error));
-    }
-  </script>
-</body>
-</html>
+  <footer class="statusbar"><span id="saveStatus">Salvo localmente</span><span id="offlineStatus">Online</span><span id="zoomLabel">100%</span></footer><button id="mobilePagesBtn" class="mobile-pages">Páginas</button><button id="exitPresentBtn" class="exit-present" hidden>Sair</button>
+  <script type="module" src="app.js"></script>
+</body></html>
