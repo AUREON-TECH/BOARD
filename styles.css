@@ -44,3 +44,17 @@ body.presenting .topbar,body.presenting .toolbar,body.presenting .slides-panel,b
 @media(max-width:1050px){.save-pill span{display:none}.workspace{grid-template-columns:82px minmax(0,1fr) 235px}.toolbar button{width:62px}.topbar{grid-template-columns:230px 1fr auto}}
 @media(max-width:820px){.workspace{grid-template-columns:76px 1fr}.slides-panel{display:none}.topbar{grid-template-columns:1fr auto}.project-center{display:none}.brand-copy small{display:none}.zoom-control{left:92px}.canvas-actions{top:9px}.empty-state{width:84%}.empty-state h1{font-size:30px}}
 @media(max-width:560px){.topbar{height:60px;padding:0 10px}.workspace{height:calc(100vh - 60px);grid-template-columns:64px 1fr}.toolbar{padding-inline:5px}.toolbar button{width:52px;min-height:50px}.toolbar button small{font-size:9px}.top-actions .save-pill,.top-actions #themeBtn{display:none}.avatar{display:none}.zoom-control{left:74px}.empty-actions{flex-direction:column}.empty-state h1{font-size:26px}}
+
+/* Remoção e gerenciamento rápido */
+.item-delete{
+  position:absolute;right:-12px;top:-12px;width:28px;height:28px;border-radius:50%;
+  border:2px solid var(--panel);background:#ef4444;color:#fff;font-size:18px;font-weight:900;
+  display:grid;place-items:center;line-height:1;box-shadow:0 6px 16px rgba(239,68,68,.28);z-index:20;
+}
+.item-delete:hover{background:#dc2626;transform:scale(1.06)}
+.slide-delete{
+  position:absolute;right:9px;top:9px;width:24px;height:24px;border-radius:50%;
+  border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:16px;line-height:1;
+  display:grid;place-items:center;
+}
+.slide-delete:hover{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
