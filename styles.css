@@ -58,3 +58,39 @@ body.presenting .topbar,body.presenting .toolbar,body.presenting .slides-panel,b
   display:grid;place-items:center;
 }
 .slide-delete:hover{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
+
+
+/* Edição direta de conteúdo */
+.item-text{
+  min-width:120px;
+  min-height:1.4em;
+  outline:none;
+  cursor:text;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.item-text:focus{
+  outline:none;
+}
+.drag-handle{
+  position:absolute;
+  left:-12px;
+  top:50%;
+  transform:translateY(-50%);
+  width:24px;
+  height:34px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--muted);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  font-size:13px;
+  cursor:grab;
+  box-shadow:var(--shadowSm);
+}
+.board-item.selected .drag-handle{display:flex}
+.board-item.editing .item-delete,
+.board-item.editing .node-plus{display:none!important}
