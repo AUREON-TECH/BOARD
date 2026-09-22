@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=6">
   <title>BOARD — Strategic Canvas</title>
 </head>
 <body>
@@ -24,6 +24,9 @@
     </div>
 
     <div class="top-actions">
+      <button id="undoBtn" class="icon-btn" title="Desfazer (Ctrl+Z)" disabled>↶</button>
+      <button id="redoBtn" class="icon-btn" title="Refazer (Ctrl+Y)" disabled>↷</button>
+      <button id="templatesBtn" class="ghost" title="Abrir templates">▦ Templates</button>
       <span id="saveStatus" class="save-pill">☁ <span>Salvo automaticamente</span></span>
       <button id="themeBtn" class="icon-btn" title="Alternar tema">☾</button>
       <button id="installBtn" class="ghost" hidden>Instalar</button>
@@ -55,6 +58,22 @@
         <svg id="connections" class="connections" aria-hidden="true"></svg>
       </div>
 
+      <div id="formatBar" class="format-bar" hidden>
+        <button id="formatBold" title="Negrito"><b>B</b></button>
+        <button id="fontDown" title="Diminuir texto">A−</button>
+        <button id="fontUp" title="Aumentar texto">A＋</button>
+        <span class="format-sep"></span>
+        <button class="color-dot blue" data-color="#2d5bff" title="Azul"></button>
+        <button class="color-dot violet" data-color="#7c3aed" title="Roxo"></button>
+        <button class="color-dot green" data-color="#10b981" title="Verde"></button>
+        <button class="color-dot amber" data-color="#f59e0b" title="Laranja"></button>
+        <button class="color-dot white" data-color="#ffffff" title="Branco"></button>
+        <span class="format-sep"></span>
+        <button id="duplicateItemBtn" title="Duplicar">⧉</button>
+        <button id="connectItemBtn" title="Conectar">⤴</button>
+        <button id="deleteItemBtn" class="danger-mini" title="Excluir">⌫</button>
+      </div>
+
       <div id="emptyHint" class="empty-state">
         <div class="empty-badge">✦</div>
         <h1>Comece com uma ideia.</h1>
@@ -66,6 +85,7 @@
       </div>
 
       <div class="zoom-control">
+        <button id="fitViewBtn" title="Ajustar à tela">⌗</button>
         <button id="zoomOut">−</button>
         <span id="zoomLabel">100%</span>
         <button id="zoomIn">＋</button>
@@ -104,11 +124,27 @@
     </section>
   </div>
 
+  <div id="templatesModal" class="projects-modal" hidden>
+    <div class="projects-backdrop" data-close-templates></div>
+    <section class="projects-dialog template-dialog" role="dialog" aria-modal="true">
+      <header class="projects-dialog-head">
+        <div><span class="eyebrow">BOARD Templates</span><h2>Comece mais rápido</h2><p>Escolha uma estrutura pronta e personalize tudo no canvas.</p></div>
+        <button id="closeTemplatesBtn" class="dialog-close" aria-label="Fechar">×</button>
+      </header>
+      <div class="template-grid">
+        <button class="template-card" data-template="mind"><span>🧠</span><strong>Mapa mental</strong><small>Ideia central e ramificações</small></button>
+        <button class="template-card" data-template="swot"><span>✦</span><strong>SWOT</strong><small>Forças, fraquezas, oportunidades e ameaças</small></button>
+        <button class="template-card" data-template="5w2h"><span>✓</span><strong>5W2H</strong><small>Plano de ação completo</small></button>
+        <button class="template-card" data-template="kanban"><span>▤</span><strong>Kanban</strong><small>A fazer, fazendo e concluído</small></button>
+      </div>
+    </section>
+  </div>
+
   <input id="imageInput" type="file" accept="image/*" hidden>
-  <script src="app.js?v=5" defer></script>
+  <script src="app.js?v=6" defer></script>
   <script>
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v5', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v6', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
     }
   </script>
 </body>
