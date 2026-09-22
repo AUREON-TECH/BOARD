@@ -1,13 +1,13 @@
 {
   "name": "BOARD — Strategic Canvas",
   "short_name": "BOARD",
-  "description": "Quadro estratégico visual para desenhar, organizar projetos e apresentar ideias.",
+  "description": "Canvas estratégico visual para pensar, conectar, organizar e apresentar ideias.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#070b16",
-  "theme_color": "#0b1020",
+  "background_color": "#f6f8fc",
+  "theme_color": "#ffffff",
   "icons": [
     {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
     {"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
