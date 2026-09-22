@@ -4,84 +4,89 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="BOARD">
-  <meta name="description" content="BOARD — canvas estratégico visual para pensar, conectar, organizar e apresentar ideias.">
+  <meta name="description" content="BOARD — canvas estratégico para mapas mentais, fluxos e planejamento visual.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
   <title>BOARD — Strategic Canvas</title>
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="brand-mark" aria-hidden="true"><span></span></span>
+      <span class="brand-mark"><span></span></span>
       <div class="brand-copy"><strong>BOARD</strong><small>Strategic Canvas</small></div>
     </div>
 
     <div class="project-center">
       <input id="projectName" class="project-name" value="Novo projeto" aria-label="Nome do projeto">
-      <span class="chevron">⌄</span>
     </div>
 
     <div class="top-actions">
       <span id="saveStatus" class="save-pill">☁ <span>Salvo automaticamente</span></span>
-      <button id="themeBtn" class="icon-btn" title="Alternar tema" aria-label="Alternar tema">☾</button>
+      <button id="themeBtn" class="icon-btn" title="Alternar tema">☾</button>
       <button id="installBtn" class="ghost" hidden>Instalar</button>
       <button id="presentBtn" class="primary">▶ <span>Apresentar</span></button>
-      <div class="avatar" aria-label="Perfil">RB</div>
+      <div class="avatar">RB</div>
     </div>
   </header>
 
   <main class="workspace">
     <aside class="toolbar" aria-label="Ferramentas">
-      <button data-tool="select" class="active" title="Selecionar"><span class="tool-icon">↖</span><span class="tool-label">Selecionar</span></button>
-      <button data-tool="text" title="Texto"><span class="tool-icon">T</span><span class="tool-label">Texto</span></button>
-      <button data-tool="note" title="Nota"><span class="tool-icon">▰</span><span class="tool-label">Nota</span></button>
-      <button data-tool="rect" title="Bloco"><span class="tool-icon">▭</span><span class="tool-label">Bloco</span></button>
-      <button data-tool="arrow" title="Conexão"><span class="tool-icon">→</span><span class="tool-label">Conexão</span></button>
-      <button id="imageBtn" title="Imagem"><span class="tool-icon">▧</span><span class="tool-label">Imagem</span></button>
+      <button data-tool="select" class="active" title="Selecionar"><span>↖</span><small>Selecionar</small></button>
+      <button id="mindMapBtn" class="map-tool" title="Criar mapa mental"><span>✦</span><small>Mapa</small></button>
+      <button data-tool="text" title="Texto"><span>T</span><small>Texto</small></button>
+      <button data-tool="note" title="Nota"><span>▰</span><small>Nota</small></button>
+      <button data-tool="rect" title="Bloco"><span>▭</span><small>Bloco</small></button>
+      <button data-tool="connect" title="Conectar blocos"><span>⤴</span><small>Conectar</small></button>
+      <button id="imageBtn" title="Adicionar imagem"><span>▧</span><small>Imagem</small></button>
       <div class="tool-spacer"></div>
-      <button id="deleteBtn" title="Excluir"><span class="tool-icon">⌫</span><span class="tool-label">Excluir</span></button>
+      <button id="deleteBtn" title="Excluir"><span>⌫</span><small>Excluir</small></button>
     </aside>
 
-    <section class="stage-wrap">
-      <div class="canvas-chrome">
-        <div class="zoom-control">
-          <button id="zoomOut" aria-label="Diminuir zoom">−</button>
-          <span id="zoomLabel">100%</span>
-          <button id="zoomIn" aria-label="Aumentar zoom">＋</button>
-        </div>
+    <section class="stage-wrap" id="stageWrap">
+      <div class="canvas-actions">
+        <button id="newMindMapBtn" class="canvas-primary">✦ Criar mapa mental</button>
+        <button id="newBlockBtn">＋ Novo bloco</button>
       </div>
-      <div id="stage" class="stage" tabindex="0" aria-label="Quadro estratégico"></div>
+
+      <div id="stage" class="stage" tabindex="0" aria-label="Quadro estratégico">
+        <svg id="connections" class="connections" aria-hidden="true"></svg>
+      </div>
 
       <div id="emptyHint" class="empty-state">
         <div class="empty-badge">✦</div>
-        <h1>Estratégia ganha vida <span>aqui.</span></h1>
-        <p>Organize ideias, conecte perspectivas e transforme planos em resultados.</p>
-        <div class="quick-actions">
-          <button data-quick="note"><span class="qa-icon blue">✦</span><b>Pense</b><small>Capture uma ideia</small></button>
-          <button data-quick="rect"><span class="qa-icon violet">▣</span><b>Organize</b><small>Estruture o plano</small></button>
-          <button data-quick="text"><span class="qa-icon green">↗</span><b>Visualize</b><small>Dê contexto</small></button>
-          <button data-quick="arrow"><span class="qa-icon amber">→</span><b>Conecte</b><small>Crie relações</small></button>
+        <h1>Comece com uma ideia.</h1>
+        <p>Crie mapas mentais, conecte blocos e organize sua estratégia visualmente.</p>
+        <div class="empty-actions">
+          <button id="emptyMapBtn" class="primary-empty">✦ Criar primeiro mapa</button>
+          <button id="emptyNoteBtn">＋ Adicionar nota</button>
         </div>
+      </div>
+
+      <div class="zoom-control">
+        <button id="zoomOut">−</button>
+        <span id="zoomLabel">100%</span>
+        <button id="zoomIn">＋</button>
       </div>
     </section>
 
     <aside class="slides-panel">
-      <div class="slides-head"><div><strong>Páginas</strong><small>Organize seu projeto</small></div><button id="addSlideBtn" title="Nova página">＋</button></div>
+      <div class="slides-head">
+        <div><strong>Páginas</strong><small>Organize seu projeto</small></div>
+        <button id="addSlideBtn" title="Nova página">＋</button>
+      </div>
       <div id="slidesList"></div>
       <button id="newPageBtn" class="new-page">＋ Nova página</button>
-      <div class="panel-footer"><span id="offlineStatus">Online</span><span>BOARD</span></div>
+      <div class="panel-footer"><span id="offlineStatus">● Online</span><span>BOARD</span></div>
     </aside>
   </main>
 
-  <script src="app.js?v=3" defer></script>
+  <input id="imageInput" type="file" accept="image/*" hidden>
+  <script src="app.js?v=4" defer></script>
   <script>
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v3', { updateViaCache: 'none' }).then(r => r.update()).catch(console.error));
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v4', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
     }
   </script>
 </body>
