@@ -94,28 +94,53 @@ function renderItem(item){
 }
 function beginEdit(el,item){
   if(item.type==='image')return;
-  el.classList.add('editing');el.contentEditable='true';el.focus();
-  const sel=window.getSelection(),range=document.createRange();range.selectNodeContents(el);range.collapse(false);sel.removeAllRanges();sel.addRange(range);
+  el.querySelectorAll('.node-plus,.item-delete').forEach(n=>n.remove());
+  el.classList.add('editing');
+  el.contentEditable='true';
+  el.focus();
+  const sel=window.getSelection(),range=document.createRange();
+  range.selectNodeContents(el);range.collapse(false);sel.removeAllRanges();sel.addRange(range);
   const finish=()=>{
+    if(!el.isConnected)return;
     el.contentEditable='false';el.classList.remove('editing');
-    const plus=el.querySelector('.node-plus');if(plus)plus.remove();
-    const val=el.innerText.replace(/\n\+$/,'').trim();
-    item.text=val||'Nova ideia';save();render();
+    const val=el.innerText.trim();
+    item.text=val||'Nova ideia';
+    save();render();
   };
   el.onblur=finish;
-  el.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();el.blur()}if(e.key==='Escape'){e.preventDefault();el.blur()}};
+  el.onkeydown=e=>{
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();el.blur()}
+    if(e.key==='Escape'){e.preventDefault();el.blur()}
+  };
+}
+function showSelection(item){
+  state.selected=item.id;
+  stage.querySelectorAll('.board-item').forEach(node=>{
+    const active=node.dataset.id===item.id;
+    node.classList.toggle('selected',active);
+    if(!active)node.querySelector('.item-delete')?.remove();
+  });
+  const el=stage.querySelector(`[data-id="${item.id}"]`);
+  if(el&&!el.querySelector('.item-delete')){
+    const del=document.createElement('button');
+    del.className='item-delete';del.type='button';del.textContent='×';del.title='Remover este item';
+    del.onpointerdown=ev=>ev.stopPropagation();
+    del.onclick=ev=>{ev.stopPropagation();deleteItem(item.id)};
+    el.appendChild(del);
+  }
 }
 function handleItemClick(e,item){
   e.stopPropagation();
   if(state.tool==='connect'){
     if(!state.connectFrom){
-      state.connectFrom=item.id;state.selected=item.id;showBanner('Agora clique no bloco que deseja conectar');
+      state.connectFrom=item.id;showSelection(item);showBanner('Agora clique no bloco que deseja conectar');
     }else if(state.connectFrom!==item.id){
-      addConnection(state.connectFrom,item.id);state.connectFrom=null;state.selected=item.id;setTool('select');hideBanner();
+      addConnection(state.connectFrom,item.id);state.connectFrom=null;showSelection(item);setTool('select');hideBanner();
+      renderConnections();
     }
-    render();return;
+    return;
   }
-  state.selected=item.id;render();
+  showSelection(item);
 }
 function addItem(type,x=280,y=210,text){
   const item={id:uid(),type,text:text||({text:'Novo texto',note:'Nova ideia',rect:'Novo bloco'}[type]||'Nova ideia'),x,y};
