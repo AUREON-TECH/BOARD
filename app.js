@@ -46,6 +46,15 @@ function render(){
     const el=document.createElement('div');
     el.className='slide-thumb'+(i===state.active?' active':'');
     el.innerHTML=`<strong>${esc(slide.name)}</strong><small>${slide.items.length} elementos</small>`;
+    if(state.slides.length>1){
+      const remove=document.createElement('button');
+      remove.className='slide-delete';
+      remove.type='button';
+      remove.textContent='×';
+      remove.title='Excluir página';
+      remove.onclick=e=>{e.stopPropagation();deleteSlide(i)};
+      el.appendChild(remove);
+    }
     el.onclick=()=>{state.active=i;state.selected=null;state.connectFrom=null;render();save()};
     el.ondblclick=()=>renameSlide(i);
     slidesList.appendChild(el);
@@ -67,6 +76,16 @@ function renderItem(item){
     plus.onpointerdown=e=>e.stopPropagation();
     plus.onclick=e=>{e.stopPropagation();addChild(item)};
     el.appendChild(plus);
+  }
+  if(state.selected===item.id){
+    const del=document.createElement('button');
+    del.className='item-delete';
+    del.type='button';
+    del.textContent='×';
+    del.title='Remover este item';
+    del.onpointerdown=e=>e.stopPropagation();
+    del.onclick=e=>{e.stopPropagation();deleteItem(item.id)};
+    el.appendChild(del);
   }
   el.onclick=e=>handleItemClick(e,item);
   el.ondblclick=e=>{e.stopPropagation();beginEdit(el,item)};
@@ -158,11 +177,28 @@ function makeDraggable(el,item){
   };
   el.onpointerup=e=>{if(drag){drag=null;if(moved){save();render()}}};
 }
+function deleteItem(id){
+  current().items=current().items.filter(i=>i.id!==id);
+  current().connections=current().connections.filter(c=>c.from!==id&&c.to!==id);
+  if(state.selected===id)state.selected=null;
+  render();save();
+}
 function deleteSelected(){
   if(!state.selected)return;
-  current().items=current().items.filter(i=>i.id!==state.selected);
-  current().connections=current().connections.filter(c=>c.from!==state.selected&&c.to!==state.selected);
-  state.selected=null;render();save();
+  deleteItem(state.selected);
+}
+function deleteSlide(i){
+  if(state.slides.length<=1)return;
+  if(!confirm('Excluir esta página e tudo que está nela?'))return;
+  state.slides.splice(i,1);
+  if(state.active>=state.slides.length)state.active=state.slides.length-1;
+  else if(i<state.active)state.active--;
+  state.selected=null;state.connectFrom=null;render();save();
+}
+function clearCurrentPage(){
+  if(!current().items.length)return;
+  if(!confirm('Remover todos os itens e conexões desta página?'))return;
+  current().items=[];current().connections=[];state.selected=null;render();save();
 }
 function setTool(tool){
   state.tool=tool;state.connectFrom=null;
@@ -176,11 +212,21 @@ document.querySelectorAll('[data-tool]').forEach(btn=>btn.onclick=()=>{
   requestAnimationFrame(()=>{const el=stage.querySelector(`[data-id="${state.selected}"]`);const item=current().items.find(i=>i.id===state.selected);if(el&&item)beginEdit(el,item)});
 });
 stage.onclick=e=>{if(e.target===stage||e.target===svg){state.selected=null;if(state.tool==='connect'){state.connectFrom=null;hideBanner()}render()}};
+stage.oncontextmenu=e=>{
+  const itemEl=e.target.closest('.board-item');
+  if(!itemEl)return;
+  e.preventDefault();
+  const id=itemEl.dataset.id;
+  if(confirm('Remover este item do quadro?'))deleteItem(id);
+};
 
 $('#mindMapBtn').onclick=createMindMap;$('#newMindMapBtn').onclick=createMindMap;$('#emptyMapBtn').onclick=createMindMap;
 $('#newBlockBtn').onclick=()=>{const it=addItem('rect',300+wrap.scrollLeft/state.zoom,200+wrap.scrollTop/state.zoom);requestAnimationFrame(()=>beginEdit(stage.querySelector(`[data-id="${it.id}"]`),it))};
 $('#emptyNoteBtn').onclick=()=>{const it=addItem('note',320,240);requestAnimationFrame(()=>beginEdit(stage.querySelector(`[data-id="${it.id}"]`),it))};
-$('#deleteBtn').onclick=deleteSelected;
+$('#deleteBtn').onclick=()=>{
+  if(state.selected) deleteSelected();
+  else clearCurrentPage();
+};
 function addSlide(){state.slides.push({id:uid(),name:`Página ${state.slides.length+1}`,items:[],connections:[]});state.active=state.slides.length-1;state.selected=null;render();save()}
 $('#addSlideBtn').onclick=addSlide;$('#newPageBtn').onclick=addSlide;
 function renameSlide(i){const n=prompt('Nome da página:',state.slides[i].name);if(n&&n.trim()){state.slides[i].name=n.trim();render();save()}}
