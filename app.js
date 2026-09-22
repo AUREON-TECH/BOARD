@@ -1,6 +1,8 @@
-const STORAGE_KEY='board.project.v4';
-const FALLBACK_KEYS=['board.project.v3','board.project.v1'];
+const LIBRARY_KEY='board.projects.v1';
+const ACTIVE_PROJECT_KEY='board.activeProject.v1';
+const LEGACY_KEYS=['board.project.v4','board.project.v3','board.project.v1'];
 const THEME_KEY='board.theme.v1';
+let projectId=null;
 const state={projectName:'Novo projeto',slides:[{id:crypto.randomUUID(),name:'Página 1',items:[],connections:[]}],active:0,selected:null,tool:'select',zoom:1,connectFrom:null};
 const $=s=>document.querySelector(s);
 const stage=$('#stage'),wrap=$('#stageWrap'),slidesList=$('#slidesList'),emptyHint=$('#emptyHint'),saveStatus=$('#saveStatus'),projectName=$('#projectName'),svg=$('#connections');
@@ -19,18 +21,54 @@ function normalize(){
     });
   });
 }
-function load(){
-  let saved=null;
-  for(const key of [STORAGE_KEY,...FALLBACK_KEYS]){
-    try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x&&Array.isArray(x.slides)){saved=x;break}}catch{}
+function blankProject(name='Novo projeto'){
+  return {id:uid(),name,createdAt:Date.now(),updatedAt:Date.now(),active:0,slides:[{id:uid(),name:'Página 1',items:[],connections:[]}]};
+}
+function readLibrary(){
+  try{
+    const lib=JSON.parse(localStorage.getItem(LIBRARY_KEY)||'[]');
+    return Array.isArray(lib)?lib:[];
+  }catch{return []}
+}
+function writeLibrary(lib){localStorage.setItem(LIBRARY_KEY,JSON.stringify(lib))}
+function migrateLegacy(){
+  const existing=readLibrary();
+  if(existing.length)return existing;
+  for(const key of LEGACY_KEYS){
+    try{
+      const old=JSON.parse(localStorage.getItem(key)||'null');
+      if(old&&Array.isArray(old.slides)){
+        const p={id:uid(),name:old.projectName||'Meu primeiro projeto',createdAt:Date.now(),updatedAt:Date.now(),active:old.active||0,slides:old.slides};
+        writeLibrary([p]);localStorage.setItem(ACTIVE_PROJECT_KEY,p.id);return [p];
+      }
+    }catch{}
   }
-  if(saved){state.projectName=saved.projectName||'Novo projeto';state.slides=saved.slides;state.active=Math.min(saved.active||0,state.slides.length-1)}
-  normalize();projectName.value=state.projectName;render();save();
+  const p=blankProject();writeLibrary([p]);localStorage.setItem(ACTIVE_PROJECT_KEY,p.id);return [p];
+}
+function loadProject(id){
+  const lib=readLibrary();
+  const p=lib.find(x=>x.id===id)||lib[0];
+  if(!p)return;
+  projectId=p.id;localStorage.setItem(ACTIVE_PROJECT_KEY,projectId);
+  state.projectName=p.name||'Novo projeto';state.slides=p.slides||[];state.active=Math.min(p.active||0,Math.max(0,state.slides.length-1));
+  state.selected=null;state.tool='select';state.zoom=1;state.connectFrom=null;
+  normalize();projectName.value=state.projectName;render();renderProjects();saveStatus.innerHTML='☁ <span>Salvo automaticamente</span>';
+}
+function load(){
+  const lib=migrateLegacy();
+  const active=localStorage.getItem(ACTIVE_PROJECT_KEY);
+  loadProject(lib.some(p=>p.id===active)?active:lib[0].id);
 }
 function save(){
+  if(!projectId)return;
   state.projectName=projectName.value.trim()||'Novo projeto';
-  localStorage.setItem(STORAGE_KEY,JSON.stringify({projectName:state.projectName,slides:state.slides,active:state.active}));
+  const lib=readLibrary();
+  const idx=lib.findIndex(p=>p.id===projectId);
+  const payload={id:projectId,name:state.projectName,createdAt:idx>=0?(lib[idx].createdAt||Date.now()):Date.now(),updatedAt:Date.now(),active:state.active,slides:state.slides};
+  if(idx>=0)lib[idx]=payload;else lib.unshift(payload);
+  writeLibrary(lib);
   saveStatus.innerHTML='☁ <span>Salvo automaticamente</span>';
+  renderProjects();
 }
 function esc(v){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 
@@ -299,6 +337,61 @@ function setZoom(z){state.zoom=Math.max(.6,Math.min(1.5,z));render()}$('#zoomIn'
 
 $('#imageBtn').onclick=()=>$('#imageInput').click();
 $('#imageInput').onchange=e=>{const f=e.target.files?.[0];if(!f)return;const reader=new FileReader();reader.onload=()=>{current().items.push({id:uid(),type:'image',src:reader.result,x:300+wrap.scrollLeft/state.zoom,y:200+wrap.scrollTop/state.zoom});render();save()};reader.readAsDataURL(f);e.target.value=''};
+
+
+function renderProjects(){
+  const grid=$('#projectsGrid');if(!grid)return;
+  const lib=readLibrary().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  grid.innerHTML='';
+  lib.forEach(p=>{
+    const card=document.createElement('article');
+    card.className='project-card'+(p.id===projectId?' active':'');
+    const count=(p.slides||[]).reduce((n,s)=>n+(s.items?.length||0),0);
+    const date=new Date(p.updatedAt||Date.now()).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    card.innerHTML=`<div class="project-card-icon">✦</div><div class="project-card-body"><strong>${esc(p.name||'Sem título')}</strong><small>${p.slides?.length||1} páginas · ${count} elementos</small><span>Atualizado ${date}</span></div><div class="project-card-actions"></div>`;
+    card.onclick=()=>{loadProject(p.id);closeProjects()};
+    const actions=card.querySelector('.project-card-actions');
+    const dup=document.createElement('button');dup.textContent='⧉';dup.title='Duplicar';dup.onclick=e=>{e.stopPropagation();duplicateProject(p.id)};
+    const del=document.createElement('button');del.textContent='×';del.title='Excluir';del.onclick=e=>{e.stopPropagation();deleteProject(p.id)};
+    actions.append(dup,del);grid.appendChild(card);
+  });
+}
+function openProjects(){renderProjects();$('#projectsModal').hidden=false}
+function closeProjects(){$('#projectsModal').hidden=true}
+function createProject(){
+  save();
+  const name=prompt('Nome do novo projeto:','Novo projeto')||'Novo projeto';
+  const p=blankProject(name.trim()||'Novo projeto');const lib=readLibrary();lib.unshift(p);writeLibrary(lib);loadProject(p.id);closeProjects();
+}
+function duplicateProject(id=projectId){
+  const lib=readLibrary();const src=lib.find(p=>p.id===id);if(!src)return;
+  const copy=JSON.parse(JSON.stringify(src));copy.id=uid();copy.name=(src.name||'Projeto')+' — Cópia';copy.createdAt=Date.now();copy.updatedAt=Date.now();
+  lib.unshift(copy);writeLibrary(lib);renderProjects();
+}
+function deleteProject(id){
+  let lib=readLibrary();if(lib.length<=1){alert('Crie outro projeto antes de excluir este.');return}
+  const p=lib.find(x=>x.id===id);if(!p||!confirm(`Excluir o projeto "${p.name}"?`))return;
+  lib=lib.filter(x=>x.id!==id);writeLibrary(lib);
+  if(id===projectId)loadProject(lib[0].id);else renderProjects();
+}
+function exportCurrentProject(){
+  save();const p=readLibrary().find(x=>x.id===projectId);if(!p)return;
+  const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=(p.name||'board').replace(/[^a-z0-9-_]+/gi,'-')+'.board.json';a.click();URL.revokeObjectURL(url);
+}
+function importProject(file){
+  const reader=new FileReader();reader.onload=()=>{
+    try{
+      const p=JSON.parse(reader.result);if(!p||!Array.isArray(p.slides))throw new Error();
+      p.id=uid();p.name=(p.name||'Projeto importado');p.createdAt=Date.now();p.updatedAt=Date.now();
+      const lib=readLibrary();lib.unshift(p);writeLibrary(lib);loadProject(p.id);closeProjects();
+    }catch{alert('Arquivo de projeto inválido.')}
+  };reader.readAsText(file);
+}
+$('#projectsBtn').onclick=openProjects;$('#closeProjectsBtn').onclick=closeProjects;
+document.querySelectorAll('[data-close-projects]').forEach(x=>x.onclick=closeProjects);
+$('#createProjectBtn').onclick=createProject;$('#duplicateProjectBtn').onclick=()=>duplicateProject(projectId);$('#exportProjectBtn').onclick=exportCurrentProject;
+$('#importProjectInput').onchange=e=>{const f=e.target.files?.[0];if(f)importProject(f);e.target.value=''};
 
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('#installBtn').hidden=false});
 $('#installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('#installBtn').hidden=true};
