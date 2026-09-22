@@ -19,6 +19,7 @@
     </div>
 
     <div class="project-center">
+      <button id="projectsBtn" class="projects-trigger" title="Abrir meus projetos">▦ <span>Meus projetos</span></button>
       <input id="projectName" class="project-name" value="Novo projeto" aria-label="Nome do projeto">
     </div>
 
@@ -82,11 +83,32 @@
     </aside>
   </main>
 
+  <div id="projectsModal" class="projects-modal" hidden>
+    <div class="projects-backdrop" data-close-projects></div>
+    <section class="projects-dialog" role="dialog" aria-modal="true" aria-labelledby="projectsTitle">
+      <header class="projects-dialog-head">
+        <div>
+          <span class="eyebrow">BOARD Workspace</span>
+          <h2 id="projectsTitle">Meus projetos</h2>
+          <p>Crie, abra, duplique e organize todos os seus boards.</p>
+        </div>
+        <button id="closeProjectsBtn" class="dialog-close" aria-label="Fechar">×</button>
+      </header>
+      <div class="projects-toolbar">
+        <button id="createProjectBtn" class="projects-primary">＋ Novo projeto</button>
+        <button id="duplicateProjectBtn">⧉ Duplicar atual</button>
+        <button id="exportProjectBtn">⇩ Exportar</button>
+        <label class="import-label">⇧ Importar<input id="importProjectInput" type="file" accept="application/json,.json" hidden></label>
+      </div>
+      <div id="projectsGrid" class="projects-grid"></div>
+    </section>
+  </div>
+
   <input id="imageInput" type="file" accept="image/*" hidden>
-  <script src="app.js?v=4" defer></script>
+  <script src="app.js?v=5" defer></script>
   <script>
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v4', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v5', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
     }
   </script>
 </body>
