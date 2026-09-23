@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=7">
   <title>BOARD — Strategic Canvas</title>
 </head>
 <body>
@@ -52,6 +52,7 @@
       <div class="canvas-actions">
         <button id="newMindMapBtn" class="canvas-primary">✦ Criar mapa mental</button>
         <button id="newBlockBtn">＋ Novo bloco</button>
+        <button id="smartTotalsBtn" class="smart-total-btn" title="Criar bloco automático de resultados">Σ Resultado automático</button>
       </div>
 
       <div id="stage" class="stage" tabindex="0" aria-label="Quadro estratégico">
@@ -141,10 +142,10 @@
   </div>
 
   <input id="imageInput" type="file" accept="image/*" hidden>
-  <script src="app.js?v=6" defer></script>
+  <script src="app.js?v=7" defer></script>
   <script>
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v6', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v7', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
     }
   </script>
 </body>
