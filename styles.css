@@ -116,3 +116,51 @@ body.presenting .topbar,body.presenting .toolbar,body.presenting .slides-panel,b
 #undoBtn:disabled,#redoBtn:disabled{opacity:.35;cursor:not-allowed}
 @media(max-width:900px){.template-grid{grid-template-columns:1fr 1fr}.top-actions #templatesBtn{display:none}}
 @media(max-width:560px){.template-grid{grid-template-columns:1fr}.format-bar{max-width:88vw;overflow-x:auto}}
+
+/* Resultados automáticos */
+.smart-total-btn{
+  background:linear-gradient(135deg,#0f172a,#334155)!important;
+  color:#fff!important;
+  border-color:transparent!important;
+}
+.board-item.smart-total{
+  min-width:210px;
+  padding:16px 18px 17px;
+  background:linear-gradient(180deg,#ffffff,#f8fbff);
+  border:2px solid var(--line);
+  text-align:left;
+  cursor:grab;
+}
+html[data-theme="dark"] .board-item.smart-total{
+  background:linear-gradient(180deg,#14233f,#0f1d35);
+}
+.board-item.smart-total.mind-green{border-color:#34c79a}
+.board-item.smart-total.mind-orange{border-color:#f59e0b}
+.board-item.smart-total.mind-violet{border-color:#8b5cf6}
+.smart-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  margin-bottom:8px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:var(--accentSoft);
+  color:var(--accent);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.06em;
+}
+.smart-label{
+  color:var(--muted);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.04em;
+}
+.smart-value{
+  margin-top:4px;
+  color:var(--text);
+  font-size:22px;
+  line-height:1.1;
+  font-weight:950;
+  letter-spacing:-.02em;
+}
