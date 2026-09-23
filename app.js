@@ -36,6 +36,13 @@ function normalize(){
       if(item.text==='Duplo clique para editar') item.text='Nova ideia';
       if(item.text==='Ideia / insight') item.text='Nova ideia';
       if(item.type==='arrow') item.type='text';
+      const label=String(item.text||'').trim().toUpperCase().replace(/\s+/g,' ');
+      if(!item.smartMetric){
+        if(/^TOTAL\s+CASA(?:L|IS)$/.test(label))item.smartMetric='casais';
+        else if(/^TOTAL\s+VENDAS?$/.test(label))item.smartMetric='vendas';
+        else if(/^TOTAL\s+VGV$/.test(label)||/^TOTAL\s+VGB$/.test(label))item.smartMetric='vgv';
+      }
+      if(item.smartMetric)item.type='smart-total';
     });
   });
 }
@@ -90,6 +97,50 @@ function save(){
 }
 function esc(v){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 
+function parseBRNumber(raw){
+  let s=String(raw||'').trim().replace(/\s/g,'').replace(/R\$/gi,'');
+  if(!s)return 0;
+  if(s.includes(',')){
+    s=s.replace(/\./g,'').replace(',','.');
+  }else{
+    const dots=(s.match(/\./g)||[]).length;
+    if(dots>1)s=s.replace(/\./g,'');
+    else if(dots===1){
+      const parts=s.split('.');
+      if(parts[1]?.length===3)s=parts.join('');
+    }
+  }
+  const n=Number(s.replace(/[^0-9.-]/g,''));
+  return Number.isFinite(n)?n:0;
+}
+function extractTotals(){
+  const totals={vendas:0,casais:0,vgv:0};
+  for(const item of current().items){
+    if(item.smartMetric||item.type==='smart-total')continue;
+    const text=String(item.text||'');
+    for(const m of text.matchAll(/(\d+(?:[.,]\d+)?)\s*VENDAS?/gi))totals.vendas+=parseBRNumber(m[1]);
+    for(const m of text.matchAll(/(\d+(?:[.,]\d+)?)\s*CASAIS?/gi))totals.casais+=parseBRNumber(m[1]);
+    for(const m of text.matchAll(/(?:VGV|VGB)\s*(?:R\$\s*)?([\d.]+(?:,\d{1,2})?)/gi))totals.vgv+=parseBRNumber(m[1]);
+  }
+  return totals;
+}
+function formatSmartValue(metric,value){
+  if(metric==='vgv')return value.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
+  return Math.round(value).toLocaleString('pt-BR');
+}
+function smartLabel(metric){
+  return metric==='casais'?'TOTAL CASAIS':metric==='vendas'?'TOTAL VENDAS':'TOTAL VGV';
+}
+function refreshSmartTotals(){
+  const totals=extractTotals();
+  current().items.forEach(item=>{
+    if(item.smartMetric){
+      item.smartValue=totals[item.smartMetric]||0;
+      const el=stage.querySelector(`[data-id="${item.id}"] .smart-value`);
+      if(el)el.textContent=formatSmartValue(item.smartMetric,item.smartValue);
+    }
+  });
+}
 function render(){
   [...stage.querySelectorAll('.board-item')].forEach(n=>n.remove());
   if(svg) svg.innerHTML='';
@@ -127,6 +178,14 @@ function renderItem(item){
   if(item.type==='image'){
     el.classList.add('image-item');
     const img=document.createElement('img');img.src=item.src;img.alt='Imagem no quadro';el.appendChild(img);
+  }else if(item.type==='smart-total'||item.smartMetric){
+    el.classList.add('smart-total');
+    const totals=extractTotals();
+    item.smartValue=totals[item.smartMetric]||0;
+    const badge=document.createElement('span');badge.className='smart-badge';badge.textContent='Σ AUTO';
+    const label=document.createElement('div');label.className='smart-label';label.textContent=smartLabel(item.smartMetric);
+    const value=document.createElement('div');value.className='smart-value';value.textContent=formatSmartValue(item.smartMetric,item.smartValue);
+    el.append(badge,label,value);
   }else{
     const text=document.createElement('div');
     text.className='item-text';
@@ -136,7 +195,7 @@ function renderItem(item){
     text.onpointerdown=e=>e.stopPropagation();
     text.onclick=e=>{e.stopPropagation();showSelection(item)};
     text.onfocus=()=>{if(!el.classList.contains('editing'))checkpoint();showSelection(item);el.classList.add('editing')};
-    text.oninput=()=>{item.text=text.innerText;saveStatus.innerHTML='☁ <span>Salvando…</span>'};
+    text.oninput=()=>{item.text=text.innerText;saveStatus.innerHTML='☁ <span>Salvando…</span>';refreshSmartTotals()};
     text.onblur=()=>{item.text=text.innerText.trim()||'Nova ideia';el.classList.remove('editing');save();};
     text.onkeydown=e=>{
       if(e.key==='Escape'){e.preventDefault();text.blur();}
@@ -172,7 +231,7 @@ function renderItem(item){
   stage.appendChild(el);
 }
 function beginEdit(el,item){
-  if(item.type==='image')return;
+  if(item.type==='image'||item.type==='smart-total'||item.smartMetric)return;
   const text=el.querySelector('.item-text');
   if(!text)return;
   showSelection(item);
@@ -351,7 +410,39 @@ stage.oncontextmenu=e=>{
   if(confirm('Remover este item do quadro?'))deleteItem(id);
 };
 
-$('#mindMapBtn').onclick=createMindMap;$('#newMindMapBtn').onclick=createMindMap;$('#emptyMapBtn').onclick=createMindMap;
+
+function ensureSmartTotals(){
+  checkpoint();
+  const existing={};
+  current().items.forEach(i=>{if(i.smartMetric)existing[i.smartMetric]=i});
+  const baseX=Math.max(1100,Math.round(wrap.scrollLeft/state.zoom+wrap.clientWidth/state.zoom-330));
+  const baseY=Math.max(120,Math.round(wrap.scrollTop/state.zoom+120));
+  let header=current().items.find(i=>String(i.text||'').trim().toUpperCase()==='RESULTADO TOTAL');
+  if(!header){
+    header={id:uid(),type:'mind-center',text:'RESULTADO TOTAL',x:baseX,y:baseY};
+    current().items.push(header);
+  }
+  const defs=[
+    ['casais','mind-green',baseY+180],
+    ['vendas','mind-orange',baseY+350],
+    ['vgv','mind-violet',baseY+520]
+  ];
+  defs.forEach(([metric,variant,y])=>{
+    let item=existing[metric];
+    if(!item){
+      item={id:uid(),type:'smart-total',smartMetric:metric,text:smartLabel(metric),variant,x:baseX+40,y,bold:true};
+      current().items.push(item);
+    }else{
+      item.type='smart-total';item.smartMetric=metric;
+    }
+    if(!current().connections.some(c=>c.from===header.id&&c.to===item.id)){
+      current().connections.push({id:uid(),from:header.id,to:item.id,variant:metric==='casais'?'soft':metric==='vendas'?'orange':'violet'});
+    }
+  });
+  state.selected=header.id;render();save();setTimeout(fitView,30);
+}
+
+$('#mindMapBtn').onclick=createMindMap;$('#newMindMapBtn').onclick=createMindMap;$('#emptyMapBtn').onclick=createMindMap;$('#smartTotalsBtn').onclick=ensureSmartTotals;
 $('#newBlockBtn').onclick=()=>{const it=addItem('rect',300+wrap.scrollLeft/state.zoom,200+wrap.scrollTop/state.zoom);requestAnimationFrame(()=>beginEdit(stage.querySelector(`[data-id="${it.id}"]`),it))};
 $('#emptyNoteBtn').onclick=()=>{const it=addItem('note',320,240);requestAnimationFrame(()=>beginEdit(stage.querySelector(`[data-id="${it.id}"]`),it))};
 $('#deleteBtn').onclick=()=>{
