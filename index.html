@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=8">
   <title>BOARD — Strategic Canvas</title>
 </head>
 <body>
@@ -118,7 +118,8 @@
       <div class="projects-toolbar">
         <button id="createProjectBtn" class="projects-primary">＋ Novo projeto</button>
         <button id="duplicateProjectBtn">⧉ Duplicar atual</button>
-        <button id="exportProjectBtn">⇩ Exportar</button>
+        <button id="exportPptxBtn" class="projects-primary">▣ Salvar PowerPoint</button>
+        <button id="exportProjectBtn">⇩ Backup BOARD</button>
         <label class="import-label">⇧ Importar<input id="importProjectInput" type="file" accept="application/json,.json" hidden></label>
       </div>
       <div id="projectsGrid" class="projects-grid"></div>
@@ -142,10 +143,12 @@
   </div>
 
   <input id="imageInput" type="file" accept="image/*" hidden>
-  <script src="app.js?v=7" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <script src="app.js?v=8" defer></script>
   <script>
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v7', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v8', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
     }
   </script>
 </body>
