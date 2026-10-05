@@ -78,6 +78,15 @@ function loadProject(id){
   state.projectName=p.name||'Novo projeto';state.slides=p.slides||[];state.active=Math.min(p.active||0,Math.max(0,state.slides.length-1));
   state.selected=null;state.tool='select';state.zoom=1;state.connectFrom=null;
   normalize();projectName.value=state.projectName;history.undo=[];history.redo=[];render();renderProjects();updateHistoryButtons();saveStatus.innerHTML='☁ <span>Salvo automaticamente</span>';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    if(current()?.items?.length){
+      fitView();
+    }else{
+      state.zoom=.9;
+      render();
+      wrap.scrollTo(0,0);
+    }
+  }));
 }
 function load(){
   const lib=migrateLegacy();
