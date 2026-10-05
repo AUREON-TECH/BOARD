@@ -583,7 +583,8 @@ function exportCurrentProject(){
 }
 async function exportPowerPoint(){
   save();
-  if(typeof html2canvas!=='function'||typeof PptxGenJS==='undefined'){
+  const PptxCtor=window.PptxGenJS||window.pptxgen;
+  if(typeof html2canvas!=='function'||!PptxCtor){
     alert('Não foi possível carregar o exportador do PowerPoint. Verifique sua internet e tente novamente.');
     return;
   }
@@ -595,7 +596,7 @@ async function exportPowerPoint(){
   const originalZoom=state.zoom;
   const originalScroll={left:wrap.scrollLeft,top:wrap.scrollTop};
   try{
-    const pptx=new PptxGenJS();
+    const pptx=new PptxCtor();
     pptx.layout='LAYOUT_WIDE';
     pptx.author='BOARD — Strategic Canvas';
     pptx.subject=state.projectName;
@@ -630,7 +631,6 @@ async function exportPowerPoint(){
       if(ratio>slideRatio){w=sw;h=sw/ratio;y=(sh-h)/2;}
       else{h=sh;w=sh*ratio;x=(sw-w)/2;}
       slide.addImage({data,x,y,w,h});
-      slide.addNotes('Exportado do BOARD — '+(state.slides[i].name||('Página '+(i+1))));
     }
     await pptx.writeFile({fileName:safeFileName(state.projectName)+'.pptx'});
   }catch(err){
