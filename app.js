@@ -573,10 +573,74 @@ function deleteProject(id){
   lib=lib.filter(x=>x.id!==id);writeLibrary(lib);
   if(id===projectId)loadProject(lib[0].id);else renderProjects();
 }
+function safeFileName(name='BOARD'){
+  return String(name||'BOARD').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9-_ ]+/gi,'').trim().replace(/\s+/g,'-')||'BOARD';
+}
 function exportCurrentProject(){
   save();const p=readLibrary().find(x=>x.id===projectId);if(!p)return;
   const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=(p.name||'board').replace(/[^a-z0-9-_]+/gi,'-')+'.board.json';a.click();URL.revokeObjectURL(url);
+  const a=document.createElement('a');a.href=url;a.download=safeFileName(p.name)+'.board.json';a.click();URL.revokeObjectURL(url);
+}
+async function exportPowerPoint(){
+  save();
+  if(typeof html2canvas!=='function'||typeof PptxGenJS==='undefined'){
+    alert('Não foi possível carregar o exportador do PowerPoint. Verifique sua internet e tente novamente.');
+    return;
+  }
+  const btn=$('#exportPptxBtn');
+  const previousText=btn?.textContent;
+  if(btn){btn.disabled=true;btn.textContent='Gerando PowerPoint…';}
+  const originalActive=state.active;
+  const originalSelected=state.selected;
+  const originalZoom=state.zoom;
+  const originalScroll={left:wrap.scrollLeft,top:wrap.scrollTop};
+  try{
+    const pptx=new PptxGenJS();
+    pptx.layout='LAYOUT_WIDE';
+    pptx.author='BOARD — Strategic Canvas';
+    pptx.subject=state.projectName;
+    pptx.title=state.projectName;
+    pptx.company='AUREON';
+    pptx.lang='pt-BR';
+    pptx.theme={
+      headFontFace:'Aptos Display',
+      bodyFontFace:'Aptos',
+      lang:'pt-BR'
+    };
+    for(let i=0;i<state.slides.length;i++){
+      state.active=i;state.selected=null;state.zoom=1;render();
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      const canvas=await html2canvas(stage,{
+        backgroundColor:document.documentElement.dataset.theme==='dark'?'#111827':'#f8faff',
+        scale:1.4,
+        useCORS:true,
+        logging:false,
+        width:stage.scrollWidth,
+        height:stage.scrollHeight,
+        windowWidth:stage.scrollWidth,
+        windowHeight:stage.scrollHeight
+      });
+      const data=canvas.toDataURL('image/png',1);
+      const slide=pptx.addSlide();
+      slide.background={color:'F8FAFF'};
+      const sw=13.333,sh=7.5;
+      const ratio=canvas.width/canvas.height;
+      const slideRatio=sw/sh;
+      let w=sw,h=sh,x=0,y=0;
+      if(ratio>slideRatio){w=sw;h=sw/ratio;y=(sh-h)/2;}
+      else{h=sh;w=sh*ratio;x=(sw-w)/2;}
+      slide.addImage({data,x,y,w,h});
+      slide.addNotes('Exportado do BOARD — '+(state.slides[i].name||('Página '+(i+1))));
+    }
+    await pptx.writeFile({fileName:safeFileName(state.projectName)+'.pptx'});
+  }catch(err){
+    console.error(err);
+    alert('Não consegui gerar o PowerPoint. Tente novamente ou use o Backup BOARD.');
+  }finally{
+    state.active=originalActive;state.selected=originalSelected;state.zoom=originalZoom;render();
+    wrap.scrollTo(originalScroll.left,originalScroll.top);
+    if(btn){btn.disabled=false;btn.textContent=previousText||'▣ Salvar PowerPoint';}
+  }
 }
 function importProject(file){
   const reader=new FileReader();reader.onload=()=>{
@@ -589,7 +653,7 @@ function importProject(file){
 }
 $('#projectsBtn').onclick=openProjects;$('#closeProjectsBtn').onclick=closeProjects;
 document.querySelectorAll('[data-close-projects]').forEach(x=>x.onclick=closeProjects);
-$('#createProjectBtn').onclick=createProject;$('#duplicateProjectBtn').onclick=()=>duplicateProject(projectId);$('#exportProjectBtn').onclick=exportCurrentProject;
+$('#createProjectBtn').onclick=createProject;$('#duplicateProjectBtn').onclick=()=>duplicateProject(projectId);$('#exportPptxBtn').onclick=exportPowerPoint;$('#exportProjectBtn').onclick=exportCurrentProject;
 $('#importProjectInput').onchange=e=>{const f=e.target.files?.[0];if(f)importProject(f);e.target.value=''};
 
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('#installBtn').hidden=false});
