@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=10">
   <title>BOARD — Strategic Canvas</title>
 </head>
 <body>
@@ -45,7 +45,7 @@
       <button data-tool="connect" title="Conectar blocos"><span>⤴</span><small>Conectar</small></button>
       <button id="imageBtn" title="Adicionar imagem"><span>▧</span><small>Imagem</small></button>
       <div class="tool-spacer"></div>
-      <button id="deleteBtn" title="Excluir"><span>⌫</span><small>Excluir</small></button>
+      <button id="deleteBtn" title="Apagar tudo desta página" aria-label="Apagar tudo desta página"><span>🗑</span><small>Apagar tudo</small></button>
     </aside>
 
     <section class="stage-wrap" id="stageWrap">
@@ -72,7 +72,7 @@
         <span class="format-sep"></span>
         <button id="duplicateItemBtn" title="Duplicar">⧉</button>
         <button id="connectItemBtn" title="Conectar">⤴</button>
-        <button id="deleteItemBtn" class="danger-mini" title="Excluir">⌫</button>
+        <button id="deleteItemBtn" class="danger-mini" title="Excluir item">⌫</button>
       </div>
 
       <div id="emptyHint" class="empty-state">
@@ -145,10 +145,10 @@
   <input id="imageInput" type="file" accept="image/*" hidden>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-  <script src="app.js?v=9" defer></script>
+  <script src="app.js?v=10" defer></script>
   <script>
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v9', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v10', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
     }
   </script>
 </body>
