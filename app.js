@@ -394,10 +394,19 @@ function deleteSlide(i){
   state.selected=null;state.connectFrom=null;render();save();
 }
 function clearCurrentPage(){
-  if(!current().items.length)return;
-  if(!confirm('Remover todos os itens e conexões desta página?'))return;
+  const slide=current();
+  if(!slide||(!slide.items.length&&!slide.connections.length))return;
+  if(!confirm('Apagar TUDO desta página? Isso remove blocos, mapa mental, imagens, conexões e resultados automáticos. Você pode desfazer com Ctrl+Z.'))return;
   checkpoint();
-  current().items=[];current().connections=[];state.selected=null;render();save();
+  slide.items=[];
+  slide.connections=[];
+  state.selected=null;
+  state.connectFrom=null;
+  setTool('select');
+  $('#formatBar').hidden=true;
+  hideBanner();
+  render();
+  save();
 }
 function setTool(tool){
   state.tool=tool;state.connectFrom=null;
@@ -454,10 +463,7 @@ function ensureSmartTotals(){
 $('#mindMapBtn').onclick=createMindMap;$('#newMindMapBtn').onclick=createMindMap;$('#emptyMapBtn').onclick=createMindMap;$('#smartTotalsBtn').onclick=ensureSmartTotals;
 $('#newBlockBtn').onclick=()=>{const it=addItem('rect',300+wrap.scrollLeft/state.zoom,200+wrap.scrollTop/state.zoom);requestAnimationFrame(()=>beginEdit(stage.querySelector(`[data-id="${it.id}"]`),it))};
 $('#emptyNoteBtn').onclick=()=>{const it=addItem('note',320,240);requestAnimationFrame(()=>beginEdit(stage.querySelector(`[data-id="${it.id}"]`),it))};
-$('#deleteBtn').onclick=()=>{
-  if(state.selected) deleteSelected();
-  else clearCurrentPage();
-};
+$('#deleteBtn').onclick=clearCurrentPage;
 function addSlide(){checkpoint();state.slides.push({id:uid(),name:`Página ${state.slides.length+1}`,items:[],connections:[]});state.active=state.slides.length-1;state.selected=null;render();save()}
 $('#addSlideBtn').onclick=addSlide;$('#newPageBtn').onclick=addSlide;
 function renameSlide(i){const n=prompt('Nome da página:',state.slides[i].name);if(n&&n.trim()){checkpoint();state.slides[i].name=n.trim();render();save()}}
