@@ -148,7 +148,7 @@
   <script src="app.js?v=10" defer></script>
   <script>
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v10', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=v11', {updateViaCache:'none'}).then(r=>r.update()).catch(console.error));
     }
   </script>
 </body>
