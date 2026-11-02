@@ -30,10 +30,11 @@ for (const token of ['manifest.webmanifest', 'theme-color', 'viewport', 'navigat
 }
 
 const sw = fs.readFileSync('sw.js', 'utf8');
-for (const token of ['CACHE_VERSION', 'Authorization', 'Cookie', 'Range', 'If-Range', 'no-store', 'private', 'Set-Cookie', 'Content-Range', 'Vary', 'offline.html']) {
+for (const token of ['CACHE_VERSION', 'SHELL_URLS', 'SHELL_URLS.has(u.href)', 'no-store', 'offline.html', 'caches.delete', 'e.waitUntil']) {
   if (!sw.includes(token)) throw new Error(`sw.js missing protection/token ${token}`);
 }
-if (!/request\.mode\s*===\s*['"]navigate['"]/.test(sw)) throw new Error('Navigation fallback policy missing');
+if (!/(?:request|r)\.mode\s*===\s*['"]navigate['"]/.test(sw)) throw new Error('Navigation fallback policy missing');
+if (!/if\s*\(!SHELL_URLS\.has\(u\.href\)\)\s*return;/.test(sw)) throw new Error('Only approved static assets may be cached');
 if (!sw.includes('caches.delete')) throw new Error('Old cache cleanup missing');
 
 const cacheVersionMatch = sw.match(/CACHE_VERSION\s*=\s*['"]([^'"]+)['"]/);
@@ -46,6 +47,6 @@ if (registrationVersionMatch[1] !== cacheVersionMatch[1]) {
 if (!html.includes("location.protocol === 'https:'") || !html.includes("location.hostname === 'localhost'")) {
   throw new Error('Service worker registration must be restricted to HTTPS or localhost');
 }
-if (!html.includes("updateViaCache: 'none'")) throw new Error('Service worker must use updateViaCache none');
+if (!/updateViaCache\s*:\s*['"]none['"]/.test(html)) throw new Error('Service worker must use updateViaCache none');
 
 console.log('BOARD PWA audit passed');
