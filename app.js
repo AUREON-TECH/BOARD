@@ -100,9 +100,15 @@ function save(){
   const idx=lib.findIndex(p=>p.id===projectId);
   const payload={id:projectId,name:state.projectName,createdAt:idx>=0?(lib[idx].createdAt||Date.now()):Date.now(),updatedAt:Date.now(),active:state.active,slides:state.slides};
   if(idx>=0)lib[idx]=payload;else lib.unshift(payload);
-  writeLibrary(lib);
-  saveStatus.innerHTML='☁ <span>Salvo automaticamente</span>';
-  renderProjects();
+  try {
+    writeLibrary(lib);
+    saveStatus.innerHTML='☁ <span>Salvo automaticamente</span>';
+    renderProjects();
+  } catch (error) {
+    console.error('BOARD: falha ao salvar projeto localmente', error);
+    saveStatus.textContent='⚠ Não salvo — exporte um backup';
+    saveStatus.title='Falha no armazenamento deste navegador. Exporte um backup antes de fechar a página.';
+  }
 }
 function esc(v){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 
