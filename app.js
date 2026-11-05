@@ -50,10 +50,13 @@ function blankProject(name='Novo projeto'){
   return {id:uid(),name,createdAt:Date.now(),updatedAt:Date.now(),active:0,slides:[{id:uid(),name:'Página 1',items:[],connections:[]}]};
 }
 function readLibrary(){
-  try{
-    const lib=JSON.parse(localStorage.getItem(LIBRARY_KEY)||'[]');
-    return Array.isArray(lib)?lib:[];
-  }catch{return []}
+  const raw=localStorage.getItem(LIBRARY_KEY);
+  if(raw===null)return [];
+  let lib;
+  try{lib=JSON.parse(raw)}
+  catch(error){throw new Error('BOARD: biblioteca local inválida; dados originais preservados.',{cause:error})}
+  if(!Array.isArray(lib))throw new Error('BOARD: formato da biblioteca inválido; dados originais preservados.');
+  return lib;
 }
 function writeLibrary(lib){localStorage.setItem(LIBRARY_KEY,JSON.stringify(lib))}
 function migrateLegacy(){
@@ -681,4 +684,8 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 $('#installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('#installBtn').hidden=true};
 window.addEventListener('appinstalled',()=>$('#installBtn').hidden=true);
 function updateNetwork(){const on=navigator.onLine;$('#offlineStatus').textContent=on?'● Online':'○ Offline'}window.addEventListener('online',updateNetwork);window.addEventListener('offline',updateNetwork);updateNetwork();
-load();
+try{load()}catch(error){
+  console.error('BOARD: carregamento interrompido para proteger dados locais',error);
+  saveStatus.textContent='⚠ Dados não carregados — não sobrescreva o armazenamento';
+  alert('Não foi possível ler os projetos salvos. Os dados originais foram preservados no navegador. Não limpe os dados do site; exporte uma cópia do armazenamento antes de tentar recuperar.');
+}
