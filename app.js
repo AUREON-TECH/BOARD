@@ -99,11 +99,11 @@ function load(){
 function save(){
   if(!projectId)return;
   state.projectName=projectName.value.trim()||'Novo projeto';
-  const lib=readLibrary();
-  const idx=lib.findIndex(p=>p.id===projectId);
-  const payload={id:projectId,name:state.projectName,createdAt:idx>=0?(lib[idx].createdAt||Date.now()):Date.now(),updatedAt:Date.now(),active:state.active,slides:state.slides};
-  if(idx>=0)lib[idx]=payload;else lib.unshift(payload);
   try {
+    const lib=readLibrary();
+    const idx=lib.findIndex(p=>p.id===projectId);
+    const payload={id:projectId,name:state.projectName,createdAt:idx>=0?(lib[idx].createdAt||Date.now()):Date.now(),updatedAt:Date.now(),active:state.active,slides:state.slides};
+    if(idx>=0)lib[idx]=payload;else lib.unshift(payload);
     writeLibrary(lib);
     saveStatus.innerHTML='☁ <span>Salvo automaticamente</span>';
     renderProjects();
