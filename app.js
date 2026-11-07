@@ -136,8 +136,8 @@ function extractTotals(){
   for(const item of current().items){
     if(item.smartMetric||item.type==='smart-total')continue;
     const text=String(item.text||'');
-    for(const m of text.matchAll(/(\d+(?:[.,]\d+)?)\s*VENDAS?/gi))totals.vendas+=parseBRNumber(m[1]);
-    for(const m of text.matchAll(/(\d+(?:[.,]\d+)?)\s*CASAIS?/gi))totals.casais+=parseBRNumber(m[1]);
+    for(const m of text.matchAll(/(\d{1,3}(?:\.\d{3})+|\d+)\s*VENDAS?/gi))totals.vendas+=parseBRNumber(m[1]);
+    for(const m of text.matchAll(/(\d{1,3}(?:\.\d{3})+|\d+)\s*CASAIS?/gi))totals.casais+=parseBRNumber(m[1]);
     for(const m of text.matchAll(/(?:VGV|VGB)\s*(?:R\$\s*)?([\d.]+(?:,\d{1,2})?)/gi))totals.vgv+=parseBRNumber(m[1]);
   }
   return totals;
