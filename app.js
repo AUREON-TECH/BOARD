@@ -669,7 +669,15 @@ async function exportPowerPoint(){
 function importProject(file){
   const reader=new FileReader();reader.onload=()=>{
     try{
-      const p=JSON.parse(reader.result);if(!p||!Array.isArray(p.slides))throw new Error();
+      const p=JSON.parse(reader.result);
+      // Validate imported pages before touching the existing local library.
+      if(!p||typeof p!=='object'||Array.isArray(p)||!Array.isArray(p.slides)||
+         p.slides.length<1||p.slides.length>200||
+         p.slides.some(slide=>!slide||typeof slide!=='object'||Array.isArray(slide)||
+           !Array.isArray(slide.items)||!Array.isArray(slide.connections)||
+           slide.items.length>5000||slide.connections.length>10000||
+           slide.items.some(item=>!item||typeof item!=='object'||Array.isArray(item))||
+           slide.connections.some(connection=>!connection||typeof connection!=='object'||Array.isArray(connection))))throw new Error('Estrutura de páginas inválida');
       p.id=uid();p.name=(p.name||'Projeto importado');p.createdAt=Date.now();p.updatedAt=Date.now();
       const lib=readLibrary();lib.unshift(p);writeLibrary(lib);loadProject(p.id);closeProjects();
     }catch{alert('Arquivo de projeto inválido.')}
