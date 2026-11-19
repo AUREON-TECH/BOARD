@@ -207,14 +207,13 @@ function renderItem(item){
   }else{
     const text=document.createElement('div');
     text.className='item-text';
-    text.contentEditable='true';
+    text.contentEditable='false';
     text.spellcheck=true;
     text.textContent=item.text||'Nova ideia';
-    text.onpointerdown=e=>e.stopPropagation();
     text.onclick=e=>{e.stopPropagation();showSelection(item)};
     text.onfocus=()=>{if(!el.classList.contains('editing'))checkpoint();showSelection(item);el.classList.add('editing')};
     text.oninput=()=>{item.text=text.innerText;saveStatus.innerHTML='☁ <span>Salvando…</span>';refreshSmartTotals()};
-    text.onblur=()=>{item.text=text.innerText.trim()||'Nova ideia';el.classList.remove('editing');save();};
+    text.onblur=()=>{item.text=text.innerText.trim()||'Nova ideia';text.contentEditable='false';el.classList.remove('editing');save();};
     text.onkeydown=e=>{
       if(e.key==='Escape'){e.preventDefault();text.blur();}
     };
@@ -253,6 +252,7 @@ function beginEdit(el,item){
   const text=el.querySelector('.item-text');
   if(!text)return;
   showSelection(item);
+  text.contentEditable='true';
   text.focus();
   const sel=window.getSelection(),range=document.createRange();
   range.selectNodeContents(text);range.collapse(false);sel.removeAllRanges();sel.addRange(range);
@@ -352,7 +352,7 @@ function renderConnections(){
 function makeDraggable(el,item){
   let drag=null,moved=false;
   el.onpointerdown=e=>{
-    if(e.target.closest('.item-text,.node-plus,.item-delete')||el.classList.contains('editing')||state.tool==='connect')return;
+    if(e.target.closest('.node-plus,.item-delete')||el.classList.contains('editing')||state.tool==='connect')return;
     const r=stage.getBoundingClientRect();
     drag={dx:(e.clientX-r.left)/state.zoom-item.x,dy:(e.clientY-r.top)/state.zoom-item.y};
     moved=false;el.setPointerCapture(e.pointerId);
