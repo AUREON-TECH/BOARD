@@ -164,3 +164,6 @@ html[data-theme="dark"] .board-item.smart-total{
   font-weight:950;
   letter-spacing:-.02em;
 }
+
+/* BOARD: reliable block dragging on mouse and touch */
+.board-item{touch-action:none}.board-item .item-text{cursor:grab}.board-item.editing{touch-action:auto}.board-item.editing .item-text{cursor:text}
